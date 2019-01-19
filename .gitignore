@@ -104,3 +104,6 @@ venv.bak/
 
 .idea
 svc.json
+
+# GCP credential file
+project-credentials.json
