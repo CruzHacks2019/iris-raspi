@@ -1,13 +1,14 @@
+from os import system
 from base64 import b64encode
 from io import BytesIO
 
 from google.cloud import texttospeech
-from picamera import PiCamera
+# from picamera import PiCamera
 from pydub import AudioSegment
 from pydub.playback import play
 
-camera = PiCamera()
-camera.start_preview()
+# camera = PiCamera()
+# camera.start_preview()
 ttsclient = texttospeech.TextToSpeechClient()
 
 
@@ -35,7 +36,14 @@ def say(text):
 
 
 def capture_image():
-    """Captures an image from the camera and returns the base64-encoded bytes."""
+    """Captures an image from the Pi camera and returns the base64-encoded bytes."""
     io = BytesIO()
     camera.capture(io, 'jpeg')
     return b64encode(io.getvalue())
+
+def capture_image_usb():
+    """Captures an image from the USB camera and returns the base64-encoded bytes."""
+    system("fswebcam --resolution 1280x720 --no-banner temp.jpg")
+    img_content = open("temp.jpg", "rb").read()
+    return b64encode(img_content)
+
