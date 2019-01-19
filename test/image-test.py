@@ -16,4 +16,5 @@ camera.capture(io, 'jpeg')
 b64 = b64encode(io.getvalue())
 
 print(b64.decode())
-requests.post(f"{API_BASE}/detect-face", data=b64.decode())
+response = requests.post(f"{API_BASE}/detect-face", data=b64.decode())
+print(response.text)

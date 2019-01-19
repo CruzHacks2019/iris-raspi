@@ -1,14 +1,11 @@
-import sys
 from base64 import b64encode
 from io import BytesIO
 
-import requests
 from google.cloud import texttospeech
 from picamera import PiCamera
 from pydub import AudioSegment
 from pydub.playback import play
 
-API_BASE = sys.argv[-1]
 camera = PiCamera()
 camera.start_preview()
 ttsclient = texttospeech.TextToSpeechClient()
@@ -37,9 +34,8 @@ def say(text):
     play(song)
 
 
-def post_image():
-    """Captures an image from the camera and posts it to the API in base64 encoding."""
+def capture_image():
+    """Captures an image from the camera and returns the base64-encoded bytes."""
     io = BytesIO()
     camera.capture(io, 'jpeg')
-    b64 = b64encode(io.getvalue())
-    requests.post(f"{API_BASE}/detect-face", data=b64.decode())
+    return b64encode(io.getvalue())
