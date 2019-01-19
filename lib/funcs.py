@@ -25,7 +25,8 @@ def say(text):
 
     # Select the type of audio file you want returned
     audio_config = texttospeech.types.AudioConfig(
-        audio_encoding=texttospeech.enums.AudioEncoding.MP3)
+        audio_encoding=texttospeech.enums.AudioEncoding.MP3,
+        speaking_rate=0.8)
 
     # Perform the text-to-speech request on the text input with the selected
     # voice parameters and audio file type
@@ -41,9 +42,9 @@ def capture_image():
     camera.capture(io, 'jpeg')
     return b64encode(io.getvalue())
 
+
 def capture_image_usb():
     """Captures an image from the USB camera and returns the base64-encoded bytes."""
     system("fswebcam --resolution 1280x720 --no-banner temp.jpg")
     img_content = open("temp.jpg", "rb").read()
     return b64encode(img_content)
-
