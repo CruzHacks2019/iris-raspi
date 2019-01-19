@@ -2,7 +2,7 @@ from snowboy import snowboydecoder
 import sys
 import signal
 
-from funcs import capture_image_usb
+from funcs import capture_image_usb, say
 from api import post_face
 
 interrupted = False
@@ -18,6 +18,9 @@ def on_hotword_trigger():
 
     print("RESPONSE")
     print(response)
+
+    if response and response.msg:
+        say(response.msg)
 
 def signal_handler(signal, frame):
     global interrupted
