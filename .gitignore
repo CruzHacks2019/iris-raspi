@@ -107,3 +107,6 @@ svc.json
 
 # GCP credential file
 project-credentials.json
+
+# temp files generated in project
+temp.jpg
