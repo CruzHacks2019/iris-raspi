@@ -1,16 +1,14 @@
 from base64 import b64encode
+from io import BytesIO
 from time import sleep
 from picamera import PiCamera
 
 # Explicitly open a new file called my_image.jpg
-my_file = open('my_image.jpg', 'wb')
+io = BytesIO()
 camera = PiCamera()
 camera.start_preview()
 sleep(2)
-camera.capture(my_file)
-# At this point my_file.flush() has been called, but the file has
-# not yet been closed
-my_file.close()
-b64 = b64encode(my_file)
+camera.capture(io, 'jpeg')
+b64 = b64encode(io.getvalue())
 
 print(b64.decode())
