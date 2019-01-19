@@ -2,10 +2,12 @@ from snowboy import snowboydecoder
 import sys
 import signal
 import speech_recognition as sr
+import json
 import os
 
 interrupted = False
 
+GOOGLE_CLOUD_SPEECH_CREDENTIALS = open("project-credentials.json").read()
 
 def audioRecorderCallback(fname):
     print("converting audio to text")
@@ -14,10 +16,7 @@ def audioRecorderCallback(fname):
         audio = r.record(source)  # read the entire audio file
     # recognize speech using Google Speech Recognition
     try:
-        # for testing purposes, we're just using the default API key
-        # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
-        # instead of `r.recognize_google(audio)`
-        print(r.recognize_google(audio))
+        print(r.recognize_google_cloud(audio, credentials_json=GOOGLE_CLOUD_SPEECH_CREDENTIALS))
     except sr.UnknownValueError:
         print("Google Speech Recognition could not understand audio")
     except sr.RequestError as e:
@@ -25,15 +24,12 @@ def audioRecorderCallback(fname):
 
     os.remove(fname)
 
-
-
 def detectedCallback():
   print('recording audio...', end='', flush=True)
 
 def signal_handler(signal, frame):
     global interrupted
     interrupted = True
-
 
 def interrupt_callback():
     global interrupted
