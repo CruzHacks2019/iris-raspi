@@ -12,7 +12,7 @@ recent_face_id = False
 recent_face_id_time = -1
 max_expire_time = 60 * 1000
 
-recent_user = None
+recent_users = None
 
 reminders = get_reminders()
 if reminders is None:
@@ -23,18 +23,16 @@ epoch = lambda: int(time.time() * 1000)
 def on_req_face_identify():
     global recent_face_id, recent_face_id_time, max_expire_time
     print("on_req_face_identify")
-    # return
 
-    print("> Capturing image from USB camera...", end="")
+    print("> Capturing image from USB camera...")
     face64 = capture_image_usb()
-    print("done!")
 
-    print("> Posting to backend...", end="")
+    print("> Posting to backend...")
     response = post_face(face64)
-    print("done!")
 
     print("RESPONSE")
     print(response)
+    recent_users = response
 
     if response is None:
         say("An unknown error has occurred!")
@@ -51,6 +49,7 @@ def on_req_face_identify():
 def on_req_more_info():
     global recent_face_id, recent_face_id_time, max_expire_time
     print("on_req_more_info")
+    print(epoch() - recent_face_id_time)
 
     # check if previous command was called or if just enough time has passed for the context to be relevent
     if not recent_face_id or epoch() - recent_face_id_time > max_expire_time:
@@ -60,7 +59,8 @@ def on_req_more_info():
     recent_face_id = False
     recent_face_id_time = -1
 
-    pass
+    for person_id, person_info in recent_users:
+        say(person_info["additionalMsg"])
 
 def signal_handler(signal, frame):
     global interrupted
@@ -70,7 +70,7 @@ def signal_handler(signal, frame):
 # use interupt_callback to check time continuously
 def interrupt_callback():
     global interrupted
-    
+    pass
     return interrupted
 
 if len(sys.argv) == 1:
