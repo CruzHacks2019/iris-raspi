@@ -8,27 +8,45 @@ from api import post_face, get_reminders
 
 interrupted = False
 
+epoch = lambda: int(time.time() * 1000)
+
 recent_face_id = False
 recent_face_id_time = -1
 max_expire_time = 60 * 1000
 
 recent_users = None
 
+def map_range(value, leftMin, leftMax, rightMin, rightMax):
+    # Figure out how 'wide' each range is
+    leftSpan = leftMax - leftMin
+    rightSpan = rightMax - rightMin
+
+    # Convert the left range into a 0-1 range (float)
+    valueScaled = float(value - leftMin) / float(leftSpan)
+
+    # Convert the 0-1 range into a value in the right range.
+    return rightMin + (valueScaled * rightSpan)
+
+
 reminders = get_reminders()
 if reminders is None:
     print("Warning: couldn't obtain reminders!")
-
-epoch = lambda: int(time.time() * 1000)
+else:
+    for (index, remind) in enumerate(reminders):
+        max_epoch_delta = 1000 * 10
+        remind["epoch"] = epoch() + map_range(index, 0, len(reminders) - 1, -max_epoch_delta, max_epoch_delta)
+        remind["tripped"] = epoch() >= remind["epoch"]
+        print(remind)
 
 def on_req_face_identify():
     global recent_face_id, recent_face_id_time, max_expire_time, recent_users
     print("on_req_face_identify")
 
     print("> Capturing image from USB camera...")
-    face64 = capture_image_usb()
+    img_data = capture_image_usb()
 
     print("> Posting to backend...")
-    response = post_face(face64)
+    response = post_face(img_data)
 
     print("RESPONSE")
     print(response)
@@ -40,14 +58,12 @@ def on_req_face_identify():
         say(response['error'])
     elif len(response) > 0:
         for person_id, person_info in recent_users.items():
-            print(person_info["msg"])
             say(person_info["msg"])
         recent_face_id = True
         recent_face_id_time = epoch()
     else:
         say("An unknown error has occurred!")
 
-# TODO: implement requesting more info
 def on_req_more_info():
     global recent_face_id, recent_face_id_time, max_expire_time, recent_users
     print("on_req_more_info")
@@ -63,7 +79,6 @@ def on_req_more_info():
 
     for person_id, person_info in recent_users.items():
         print(person_info)
-        print(person_info["additionalMsg"])
         say(person_info["additionalMsg"])
 
 def signal_handler(signal, frame):
@@ -73,8 +88,15 @@ def signal_handler(signal, frame):
 # TODO: implement reminder check and alerts
 # use interupt_callback to check time continuously
 def interrupt_callback():
-    global interrupted
-    pass
+    global interrupted, reminders
+    for remind in reminders:
+        # check of any reminder is within 1 second
+        if not remind["tripped"] and abs(epoch() - remind["epoch"]) < 1000:
+            if remind["type"] == "medication":
+                say("You have to take your medication!")
+            else: # type == appointment
+                say("You have to go to your doctor's appointment!")
+            remind["tripped"] = True
     return interrupted
 
 if len(sys.argv) == 1:

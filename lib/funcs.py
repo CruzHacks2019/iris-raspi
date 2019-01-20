@@ -14,6 +14,9 @@ ttsclient = texttospeech.TextToSpeechClient()
 
 def say(text):
     """Plays some text using GCP's TTS API."""
+    # DEBUG PURPOSES ONLY
+    print(text)
+
     # Set the text input to be synthesized
     synthesis_input = texttospeech.types.SynthesisInput(text=text)
 
@@ -40,11 +43,11 @@ def capture_image():
     """Captures an image from the Pi camera and returns the base64-encoded bytes."""
     io = BytesIO()
     camera.capture(io, 'jpeg')
-    return b64encode(io.getvalue())
+    return io.getvalue()
 
 
 def capture_image_usb(resolution="1280x720"):
     """Captures an image from the USB camera and returns the base64-encoded bytes."""
     system(f"fswebcam --resolution {resolution} --no-banner temp.jpg")
     img_content = open("temp.jpg", "rb").read()
-    return b64encode(img_content)
+    return img_content
