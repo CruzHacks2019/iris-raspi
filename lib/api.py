@@ -2,7 +2,7 @@ import sys
 
 import requests
 
-API_BASE = "http://1f757ced.ngrok.io" # sys.argv[-1]
+API_BASE = "http://cdec4d06.ngrok.io" # sys.argv[-1]
 
 def post_face(face_data):
     """Posts face (a base-64 encoded bytes object) and returns...something."""
