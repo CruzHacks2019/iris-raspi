@@ -21,7 +21,7 @@ if reminders is None:
 epoch = lambda: int(time.time() * 1000)
 
 def on_req_face_identify():
-    global recent_face_id, recent_face_id_time, max_expire_time
+    global recent_face_id, recent_face_id_time, max_expire_time, recent_users
     print("on_req_face_identify")
 
     print("> Capturing image from USB camera...")
@@ -36,20 +36,22 @@ def on_req_face_identify():
 
     if response is None:
         say("An unknown error has occurred!")
-    elif 'msg' in response:
-        say(response['msg'])
-        recent_face_id = True
-        recent_face_id_time = epoch()
     elif 'error' in response:
         say(response['error'])
+    elif len(response) > 0:
+        for person_id, person_info in recent_users.items():
+            print(person_info["msg"])
+            say(person_info["msg"])
+        recent_face_id = True
+        recent_face_id_time = epoch()
     else:
         say("An unknown error has occurred!")
 
 # TODO: implement requesting more info
 def on_req_more_info():
-    global recent_face_id, recent_face_id_time, max_expire_time
+    global recent_face_id, recent_face_id_time, max_expire_time, recent_users
     print("on_req_more_info")
-    print(epoch() - recent_face_id_time)
+    print(epoch(), recent_face_id_time)
 
     # check if previous command was called or if just enough time has passed for the context to be relevent
     if not recent_face_id or epoch() - recent_face_id_time > max_expire_time:
@@ -59,7 +61,9 @@ def on_req_more_info():
     recent_face_id = False
     recent_face_id_time = -1
 
-    for person_id, person_info in recent_users:
+    for person_id, person_info in recent_users.items():
+        print(person_info)
+        print(person_info["additionalMsg"])
         say(person_info["additionalMsg"])
 
 def signal_handler(signal, frame):
@@ -81,7 +85,6 @@ if len(sys.argv) == 1:
 person = sys.argv[1]
 
 face_id_models = [
-  f"who_is_that-{person}",
   f"who_are_you-{person}",
   f"dont_remember_you-{person}"
 ]
