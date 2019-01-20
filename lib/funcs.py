@@ -11,6 +11,7 @@ from pydub.playback import play
 # camera.start_preview()
 ttsclient = texttospeech.TextToSpeechClient()
 
+
 def say(text):
     """Plays some text using GCP's TTS API."""
     # Set the text input to be synthesized
@@ -24,7 +25,8 @@ def say(text):
 
     # Select the type of audio file you want returned
     audio_config = texttospeech.types.AudioConfig(
-        audio_encoding=texttospeech.enums.AudioEncoding.MP3)
+        audio_encoding=texttospeech.enums.AudioEncoding.MP3,
+        speaking_rate=0.8)
 
     # Perform the text-to-speech request on the text input with the selected
     # voice parameters and audio file type
@@ -33,15 +35,16 @@ def say(text):
     song = AudioSegment.from_file(BytesIO(response.audio_content), format="mp3")
     play(song)
 
+
 def capture_image():
     """Captures an image from the Pi camera and returns the base64-encoded bytes."""
     io = BytesIO()
     camera.capture(io, 'jpeg')
     return b64encode(io.getvalue())
 
+
 def capture_image_usb(resolution="1280x720"):
     """Captures an image from the USB camera and returns the base64-encoded bytes."""
     system(f"fswebcam --resolution {resolution} --no-banner temp.jpg")
     img_content = open("temp.jpg", "rb").read()
     return b64encode(img_content)
-
