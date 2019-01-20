@@ -118,6 +118,8 @@ more_info_models = [
   f"still_dont_remember-{person}"
 ]
 
+reminder_recall_model = f"my_todo_list-{person}"
+
 more_info_callbacks = [on_req_more_info] * len(more_info_models)
 
 # assemble all to-be-loaded models for processing
