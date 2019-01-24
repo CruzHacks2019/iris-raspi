@@ -11,7 +11,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 interrupted = False
 
 epoch = lambda: int(time.time() * 1000)
-anti_epoch = lambda epoch: time.strftime("%a, %d %b %Y on %H:%M:%S", time.localtime(epoch))
+anti_epoch = lambda epoch: time.strftime("%A at %I %p", time.localtime(epoch))
 
 recent_face_id = False
 recent_face_id_time = -1
@@ -40,7 +40,7 @@ def on_req_face_identify():
     elif len(response) > 0:
         say_string = ""
         for person_id, person_info in recent_users.items():
-            say_string = person_info["msg"]
+            say_string += person_info["msg"] + " "
         say(say_string)
         recent_face_id = True
         recent_face_id_time = epoch()
@@ -63,33 +63,36 @@ def on_req_more_info():
     say_string = ""
     for person_id, person_info in recent_users.items():
         print(person_info)
-        say_string += person_info["additionalMsg"]
+        say_string += person_info["additionalMsg"] + " "
 
     say(say_string)
 
-# TODO: add query reminders ability
 def on_req_query_reminders():
+    reminders = get_reminders()
+    print(reminders)
     valid_reminds = [reminder for reminder in reminders if not reminder["tripped"]]
     say_string = f"You have {len(valid_reminds)} upcomming events. "
-    for remind in reminders:
+    for remind in valid_reminds:
         date_time = anti_epoch(int(remind['epoch'] / 1000))
         if remind["type"] == "medication":
-            say_string = f"You'll need to take your medication by {date_time}. "
+            say_string += f"You'll need to take your medication by {date_time}. "
         else: # type == appointment
-            say_string = f"You'll need to attend your doctor's appointment by {date_time}. "
+            say_string += f"You'll need to attend your doctor's appointment by {date_time}. "
 
     say(say_string)
 
 def signal_handler(signal, frame):
     global interrupted, scheduler
-    scheduler.shutdown()
+    # if scheduler is not None:
+    #     scheduler.shutdown()
     interrupted = True
 
 def track_reminders():
     print("Checking reminders...")
     reminders = get_reminders()
-    for remind in reminders:
-        remind["tripped"] = epoch() >= remind["epoch"]
+    print(reminders)
+    # for remind in reminders:
+    #    remind["tripped"] = epoch() >= remind["epoch"]
 
     ticking_reminds = [remind for remind in reminders if not remind["tripped"]]
     for remind in ticking_reminds:
@@ -127,10 +130,10 @@ if len(sys.argv) == 1:
 
 person = sys.argv[1]
 
-print("Starting the reminder checker...")
-scheduler = BackgroundScheduler()
-scheduler.add_job(track_reminders, 'interval', seconds=10)
-scheduler.start()
+# print("Starting the reminder checker...")
+# scheduler = BackgroundScheduler()
+# scheduler.add_job(track_reminders, 'interval', seconds=10)
+# scheduler.start()
 
 face_id_models = [ f"who_are_you-{person}", f"dont_remember_you-{person}" ]
 face_id_callbacks = [on_req_face_identify] * len(face_id_models)
@@ -147,7 +150,7 @@ final_models = ["hotword-models/" + model + ".pmdl" for model in combined_models
 combined_callbacks = face_id_callbacks + more_info_callbacks + reminder_recall_callbacks
 
 # set sensitivities for all models
-sensitivity_list = [0.5] * len(final_models)
+sensitivity_list = [0.45] + [0.5] * (len(final_models) - 1)
 
 # capture SIGINT signal, e.g., Ctrl+C
 signal.signal(signal.SIGINT, signal_handler)

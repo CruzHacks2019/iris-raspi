@@ -1,8 +1,10 @@
 import sys
-
+import time
 import requests
 
-API_BASE = "http://cdec4d06.ngrok.io" # sys.argv[-1]
+API_BASE = "http://689afc05.ngrok.io" # sys.argv[-1]
+
+epoch = lambda: int(time.time() * 1000)
 
 def post_face(face_data):
     """Posts face (a base-64 encoded bytes object) and returns...something."""
@@ -17,7 +19,11 @@ def get_reminders():
     """Retrieves all reminders for use with proactive notifications"""
     response = requests.get(f"{API_BASE}/reminders")
     try:
-        return response.json()
+        reminders = response.json()
+        for remind in reminders:
+            remind["tripped"] = epoch() >= remind["epoch"]
+        return reminders
     except Exception as ex:
+        print(ex)
         print(response.text)
         return None
