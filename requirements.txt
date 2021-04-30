@@ -21,7 +21,7 @@ pydub==0.23.0
 python-config==0.1.2
 pytz==2018.9
 requests==2.21.0
-rsa==4.0
+rsa==4.7
 simpleaudio==1.0.2
 six==1.12.0
 snowboy==1.3.0
